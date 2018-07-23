@@ -5,8 +5,6 @@ import struct
 import inspect
 from enum import Enum
 import sys
-from itertools import accumulate
-import UBX
 
 
 class MessageClass(Enum):
