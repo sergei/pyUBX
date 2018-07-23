@@ -2,3 +2,9 @@
 __pycache__
 *.pyc
 .DS_Store
+
+.idea/markdown-navigator
+.idea/markdown-navigator.xml
+.idea/misc.xml
+.idea/workspace.xml
+.pytest_cache/
