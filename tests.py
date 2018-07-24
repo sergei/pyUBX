@@ -47,6 +47,28 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(gnss.flags_4, 0x01010000)
         self.assertEqual(gnss.maxTrkCh_7, 0x0E)
 
+    def testCFG_MSG_SET(self):
+        msg = UBX.CFG.MSG.Set(msgClass=6, msgId=7, rate=8)
+        self.assertEqual(msg._class, 0x06)
+        self.assertEqual(msg._id, 0x01)
+        self.assertEqual(msg.serialize(), b'\xb5\x62\x06\x01\x03\x00\x06\x07\x08\x1f\x67')
+
+        msg = UBX.CFG.MSG.Set(msgClass=6, msgId=7, rateI2C=1, rateUART1=2, rateUSB=4, rateSPI=5)
+        self.assertEqual(msg._class, 0x06)
+        self.assertEqual(msg._id, 0x01)
+        self.assertEqual(msg.serialize(), b'\xb5\x62\x06\x01\x08\x00\x06\x07\x01\x02\x00\x04\x05\x00(*')
+
+        payload = b'\x02\x13\x00\x01\x00\x00\x00\x00'
+        msg = parseUBXPayload(UBX.CFG._class, UBX.CFG.MSG._id, payload)
+        self.assertEqual(msg.msgClass, 0x02)
+        self.assertEqual(msg.msgId, 0x13)
+        self.assertEqual(msg.rateI2C, 0x00)
+        self.assertEqual(msg.rateUART1, 0x01)
+        self.assertEqual(msg.rateUSB, 0x00)
+        self.assertEqual(msg.rateSPI, 0x00)
+        self.assertEqual(msg.rateRes1, 0x00)
+        self.assertEqual(msg.rateRes2, 0x00)
+
 
 if __name__ == '__main__':
     unittest.main()

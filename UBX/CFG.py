@@ -81,6 +81,48 @@ class CFG:
             extintInactivityMs = U4(12)  # ms  inactivity time out on EXTINT pint if enabled
 
     @addGet
+    class MSG:
+        u"""§32.11.16.3 Set Message Rate.  (page 188)"""
+
+        _id = 0x01
+
+        class Fields:
+            msgClass = U1(1)  # Message Class
+            msgId = U1(2)  # Message Identifier
+            rateI2C = U1(3)  # Send rate on I2C port
+            rateUART1 = U1(4)  # Send rate on UART 1 port
+            rateRes1 = U1(5)  # Send rate on port 4 (reserved)
+            rateUSB = U1(6)  # Send rate on USB port
+            rateSPI = U1(7)  # Send rate on SPI port
+            rateRes2 = U1(8)  # Send rate on port 5 (reserved)
+
+        class Set(UBXMessage):
+            def __init__(self, msgClass=0, msgId=0, rate=None, rateI2C = None, rateUART1= None,
+                         rateUSB=None, rateSPI=None):
+                if rate:  # Set message rate configuration for the current port.
+                    payload = struct.pack(
+                        '<BBB', msgClass, msgId, rate,
+                    )
+                elif rateI2C:  # Set message rate configuration for all ports.
+                    if not rateUART1:
+                        raise ValueError('rateUART1 is not specified')
+                    if not rateUSB:
+                        raise ValueError('rateUSB is not specified')
+                    if not rateSPI:
+                        raise ValueError('rateSPI is not specified')
+                    payload = struct.pack(
+                        '<BBBBBBBB', msgClass, msgId, rateI2C, rateUART1, 0, rateUSB, rateSPI, 0
+                    )
+                else:  # Poll request
+                    payload = struct.pack(
+                        '<BB', msgClass, msgId
+                    )
+
+                UBXMessage.__init__(
+                    self, CFG._class, CFG.MSG._id, payload
+                )
+
+    @addGet
     class RATE:
         u"""§31.11.24 Navigation/Measurement Rate Settings."""
 
