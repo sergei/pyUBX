@@ -60,6 +60,32 @@ class CFG:
                 reserved = U1(4)
                 flags = X4(5)
 
+        class Set(UBXMessage):
+            def __init__(self, cfgBlocks):
+                msgVer = 0
+                numTrkChHw = 0x20   # R/O anyway
+                numTrkChUse = 0x20
+                numConfigBlocks = len(cfgBlocks)
+
+                payload = bytearray(4 + 8 * numConfigBlocks)
+                offset = 0
+                struct.pack_into(
+                    '<BBBB', payload,offset,
+                    msgVer, numTrkChHw, numTrkChUse, numConfigBlocks
+                )
+                offset += 4
+                for cfg_block in cfgBlocks:
+                    struct.pack_into(
+                        '<BBBBI', payload,offset,
+                        cfg_block['gnssId'], cfg_block['resTrkCh'], cfg_block['maxTrkCh'], 0, cfg_block['flags']
+                    )
+                    offset += 8
+
+                UBXMessage.__init__(
+                    self, CFG._class, CFG.GNSS._id, payload
+                )
+
+
     @addGet
     class PM2:
         u"""§31.11.20 Extended Power Management configuration."""

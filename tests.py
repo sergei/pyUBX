@@ -47,6 +47,26 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(gnss.flags_4, 0x01010000)
         self.assertEqual(gnss.maxTrkCh_7, 0x0E)
 
+    def testCFG_GNSS_SET(self):
+        gps = {'gnssId': 0, 'resTrkCh': 12, 'maxTrkCh': 12, 'flags': 0x01010001}
+        sbas = {'gnssId': 1, 'resTrkCh': 0, 'maxTrkCh': 0, 'flags': 0x01010000}
+        gal = {'gnssId': 2, 'resTrkCh': 8, 'maxTrkCh': 8, 'flags': 0x01010001}
+        bds = {'gnssId': 3, 'resTrkCh': 4, 'maxTrkCh': 4, 'flags': 0x01010001}
+        imes = {'gnssId': 4, 'resTrkCh': 0, 'maxTrkCh': 0, 'flags': 0x01010000}
+        qzss = {'gnssId': 5, 'resTrkCh': 0, 'maxTrkCh': 0, 'flags': 0x01010000}
+        glo = {'gnssId': 6, 'resTrkCh': 8, 'maxTrkCh': 8, 'flags': 0x01010001}
+        cfgBlocks = [gps, sbas, gal, bds, imes, qzss, glo]
+        msg = UBX.CFG.GNSS.Set(cfgBlocks)
+        self.assertEqual(msg._class, 0x06)
+        self.assertEqual(msg._id, 0x3e)
+
+        expected = (b'\xb5b\x06><\x00\x00  \x07\x00\x0c\x0c\x00\x01\x00\x01\x01\x01\x00'
+         b'\x00\x00\x00\x00\x01\x01\x02\x08\x08\x00\x01\x00\x01\x01\x03\x04'
+         b'\x04\x00\x01\x00\x01\x01\x04\x00\x00\x00\x00\x00\x01\x01\x05\x00'
+         b'\x00\x00\x00\x00\x01\x01\x06\x08\x08\x00\x01\x00\x01\x01.\xf6')
+
+        self.assertEqual(msg.serialize(), expected)
+
     def testCFG_MSG_SET(self):
         msg = UBX.CFG.MSG.Set(msgClass=6, msgId=7, rate=8)
         self.assertEqual(msg._class, 0x06)
