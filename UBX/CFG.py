@@ -43,6 +43,7 @@ class CFG:
             numTrkChHw = U1(2)
             numTrkChUse = U1(3)
             numConfigBlocks = U1(4)
+
             class Repeated:
                 gnssId = U1(
                     1,
@@ -63,20 +64,20 @@ class CFG:
         class Set(UBXMessage):
             def __init__(self, cfgBlocks):
                 msgVer = 0
-                numTrkChHw = 0x20   # R/O anyway
+                numTrkChHw = 0x20  # R/O anyway
                 numTrkChUse = 0x20
                 numConfigBlocks = len(cfgBlocks)
 
                 payload = bytearray(4 + 8 * numConfigBlocks)
                 offset = 0
                 struct.pack_into(
-                    '<BBBB', payload,offset,
+                    '<BBBB', payload, offset,
                     msgVer, numTrkChHw, numTrkChUse, numConfigBlocks
                 )
                 offset += 4
                 for cfg_block in cfgBlocks:
                     struct.pack_into(
-                        '<BBBBI', payload,offset,
+                        '<BBBBI', payload, offset,
                         cfg_block['gnssId'], cfg_block['resTrkCh'], cfg_block['maxTrkCh'], 0, cfg_block['flags']
                     )
                     offset += 8
@@ -84,7 +85,6 @@ class CFG:
                 UBXMessage.__init__(
                     self, CFG._class, CFG.GNSS._id, payload
                 )
-
 
     @addGet
     class PM2:
@@ -95,15 +95,19 @@ class CFG:
         class Fields:
             version = U1(1)  # Message version (0x02 for this version)
             reserved1 = U1(2)  # Reserved
-            maxStartupStartupDur = U1(3)  # Maximum time to spend in Acquisition state. If 0: bound disabled (see maxStartupStateDur). (not supported in protocol versions less than 17), (not supported in protocol versions 23 to 23.01)
+            maxStartupStartupDur = U1(
+                3)  # Maximum time to spend in Acquisition state. If 0: bound disabled (see maxStartupStateDur). (not supported in protocol versions less than 17), (not supported in protocol versions 23 to 23.01)
             reserved2 = U1(4)  # Reserved
             flags = X4(5)  # PSM configuration flags (see graphic below)
-            updatePeriod = U4(6) 	# ms  Position update period. If set to 0, the receiver will never retry a fix and it will wait for external events
-            searchPeriod = U4(7) 	# ms  Acquisition retry period if previously failed. If set to 0, the receiver will never retry a startup (not supported in protocol versions 23 to 23.01)
-            gridOffset = U4(8) 	# ms  Grid offset relative to GPS start of week (not supported in protocol versions 23 to 23.01)
+            updatePeriod = U4(
+                6)  # ms  Position update period. If set to 0, the receiver will never retry a fix and it will wait for external events
+            searchPeriod = U4(
+                7)  # ms  Acquisition retry period if previously failed. If set to 0, the receiver will never retry a startup (not supported in protocol versions 23 to 23.01)
+            gridOffset = U4(
+                8)  # ms  Grid offset relative to GPS start of week (not supported in protocol versions 23 to 23.01)
             onTime = U2(9)  # s  Time to stay in Tracking state (not supported in protocol versions 23 to 23.01)
             minAcqTime = U2(10)  # s  minimal search time
-            reserved3 = U(11, 20) 	# Reserved
+            reserved3 = U(11, 20)  # Reserved
             extintInactivityMs = U4(12)  # ms  inactivity time out on EXTINT pint if enabled
 
     @addGet
@@ -123,7 +127,7 @@ class CFG:
             rateRes2 = U1(8)  # Send rate on port 5 (reserved)
 
         class Set(UBXMessage):
-            def __init__(self, msgClass=0, msgId=0, rate=None, rateI2C = None, rateUART1= None,
+            def __init__(self, msgClass=0, msgId=0, rate=None, rateI2C=None, rateUART1=None,
                          rateUSB=None, rateSPI=None):
                 if rate:  # Set message rate configuration for the current port.
                     payload = struct.pack(
@@ -146,6 +150,40 @@ class CFG:
 
                 UBXMessage.__init__(
                     self, CFG._class, CFG.MSG._id, payload
+                )
+
+    @addGet
+    class RST:
+        u"""§32.11.27.1 Reset Receiver / Clear Backup Data Structures.  (page 212)"""
+
+        _id = 0x04
+
+        class Fields:
+            navBbrMask = X2(1)  # BBR Sections to clear. The following Special Sets
+                                # apply:
+                                # 0x0000 Hot start
+                                # 0x0001 Warm start
+                                # 0xFFFF Cold start
+
+            resetMode = U1(2)   # Reset Type
+                                # 0x00 - Hardware reset (Watchdog) immediately
+                                # 0x01 - Controlled Software reset
+                                # 0x02 - Controlled Software reset (GNSS only)
+                                # 0x04 - Hardware reset (Watchdog) after
+                                # shutdown
+                                # 0x08 - Controlled GNSS stop
+                                # 0x09 - Controlled GNSS start
+
+            reserved1 = U1(3)  # Reserved
+
+        class Set(UBXMessage):
+            def __init__(self, navBbrMask=0, resetMode=0):
+                payload = struct.pack(
+                        '<HBB', navBbrMask, resetMode,0
+                    )
+
+                UBXMessage.__init__(
+                    self, CFG._class, CFG.RST._id, payload
                 )
 
     @addGet
@@ -177,14 +215,14 @@ class CFG:
         _id = 0x11
 
         class Fields:
-            reserved1 = U1(1)   # reserved
-            lpMode = U1(        # Low Power Mode
+            reserved1 = U1(1)  # reserved
+            lpMode = U1(  # Low Power Mode
                 2,
                 allowed={
                     0: "Continuous Mode",
                     1: "Power Save Mode",
-                    4: "Continuous Mode"    # for ver>=14 0 and 4 are the same
-                    }
+                    4: "Continuous Mode"  # for ver>=14 0 and 4 are the same
+                }
             )
 
     class PRT:
@@ -193,15 +231,15 @@ class CFG:
         _id = 0x00
 
         class Fields:
-            portID      = U1(1)
-            reserved1   = U1(2)
-            txReady     = X2(3)
-            mode        = X4(4)
-            reserved2   = U4(5)
+            portID = U1(1)
+            reserved1 = U1(2)
+            txReady = X2(3)
+            mode = X4(4)
+            reserved2 = U4(5)
             inProtoMask = X2(6)
-            outProtoMask= X2(7)
-            flags       = X2(8)
-            reserved3   = U2(9)
+            outProtoMask = X2(7)
+            flags = X2(8)
+            reserved3 = U2(9)
 
     class PRT_GET:
         u"""§31.11.22.4 Port Configuration."""
@@ -209,7 +247,7 @@ class CFG:
         _id = 0x00
 
         class Fields:
-            portID      = U1(1)
+            portID = U1(1)
 
     @addGet
     class TP5:
@@ -218,15 +256,17 @@ class CFG:
         _id = 0x31
 
         class Fields:
-            tpIdx = U1(1)   # Time pulse selection (0 = TIMEPULSE, 1 = TIMEPULSE2)
+            tpIdx = U1(1)  # Time pulse selection (0 = TIMEPULSE, 1 = TIMEPULSE2)
             version = U1(2)  # Message version (0x00 for this version)
             reserved2 = U2(3)
             antCableDelay = I2(4)  # Antenna cable delay
             rfGroupDelay = I2(5)  # RF group delay
             freqPeriod = U4(6)  # Frequency or period time, depending on setting of bit 'isFreq'
-            freqPeriodLock = U4(7)  # Frequency or period time when locked to GPS time, only used if 'lockedOtherSet' is set
+            freqPeriodLock = U4(
+                7)  # Frequency or period time when locked to GPS time, only used if 'lockedOtherSet' is set
             pulseLenRatio = U4(8)  # Pulse length or duty cycle, depending on 'isLength'
-            pulseLenRatioLock = U4(9)  # Pulse length or duty cycle when locked to GPS time, only used if 'lockedOtherSet' is set
+            pulseLenRatioLock = U4(
+                9)  # Pulse length or duty cycle when locked to GPS time, only used if 'lockedOtherSet' is set
             userConfigDelay = I4(10)  # User configurable time pulse delay
             flags = X4(11)  # Configuration flags
 

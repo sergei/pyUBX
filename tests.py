@@ -89,6 +89,11 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(msg.rateRes1, 0x00)
         self.assertEqual(msg.rateRes2, 0x00)
 
+    def testCFG_RST_SET(self):
+        msg = UBX.CFG.RST.Set(navBbrMask=0xFFFF, resetMode=0x01)
+        self.assertEqual(msg._class, 0x06)
+        self.assertEqual(msg._id, 0x04)
+        self.assertEqual(msg.serialize(), b'\xb5\x62\x06\x04\x04\x00\xff\xff\x01\x00\r_')
 
 if __name__ == '__main__':
     unittest.main()
