@@ -23,7 +23,7 @@ class UBXManager(threading.Thread):
         UBX_CHKSUM_1 = 10
         UBX_CHKSUM_2 = 11
 
-    def __init__(self, ser, debug=False):
+    def __init__(self, ser, debug=False, log_file_name=None):
         """Instantiate with serial."""
         from UBXMessage import UBXMessage
         threading.Thread.__init__(self)
@@ -31,6 +31,8 @@ class UBXManager(threading.Thread):
         self.debug = debug
         self._shutDown = False
         self.ubx_chksum = UBXMessage.Checksum()
+        self.log_file_name = log_file_name
+        self.log_file = None
 
     def run(self):
         """Run the parser."""
@@ -48,15 +50,19 @@ class UBXManager(threading.Thread):
             self._fromUBX_CHKSUM_1,
             self._fromUBX_CHKSUM_2,
         ]
-        if self.debug:
-            logfile = open("UBX.log", "wb")
+        if self.debug or self.log_file_name is not None:
+            log_file_name = "UBX.log" if self.log_file_name is None else self.log_file_name
+            self.log_file = open(log_file_name, "wb")
             sys.stderr.write("Writing log to UBX.log\n")
         self._reset()
+
         while not self._shutDown:
             byte = self.ser.read(1)
-            if self.debug:
-                logfile.write(byte)
-                logfile.flush()
+
+            if self.log_file is not None:
+                self.log_file.write(byte)
+                if self.debug:
+                    self.log_file.flush()
             self.state = transitionFrom[self.state.value](byte)
 
     def _reset(self):
@@ -158,6 +164,9 @@ class UBXManager(threading.Thread):
                     .format(self.ubx_chksum.get(), self.chksum)
             )
         self._reset()
+        if self.log_file is not None:
+            self.log_file.flush()
+
         if byte == b'$':
             return UBXManager.STATE.NMEA_BODY
         elif byte == b'\xb5':
