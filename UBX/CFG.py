@@ -2,7 +2,7 @@
 
 from UBXMessage import UBXMessage, initMessageClass, addGet
 import struct
-from Types import U1, U2, U4, X2, X4, U, I2, I4, X1
+from Types import U1, U2, U4, X2, X4, U, I2, I4, X1, I1
 
 
 @initMessageClass
@@ -160,27 +160,27 @@ class CFG:
 
         class Fields:
             navBbrMask = X2(1)  # BBR Sections to clear. The following Special Sets
-                                # apply:
-                                # 0x0000 Hot start
-                                # 0x0001 Warm start
-                                # 0xFFFF Cold start
+            # apply:
+            # 0x0000 Hot start
+            # 0x0001 Warm start
+            # 0xFFFF Cold start
 
-            resetMode = U1(2)   # Reset Type
-                                # 0x00 - Hardware reset (Watchdog) immediately
-                                # 0x01 - Controlled Software reset
-                                # 0x02 - Controlled Software reset (GNSS only)
-                                # 0x04 - Hardware reset (Watchdog) after
-                                # shutdown
-                                # 0x08 - Controlled GNSS stop
-                                # 0x09 - Controlled GNSS start
+            resetMode = U1(2)  # Reset Type
+            # 0x00 - Hardware reset (Watchdog) immediately
+            # 0x01 - Controlled Software reset
+            # 0x02 - Controlled Software reset (GNSS only)
+            # 0x04 - Hardware reset (Watchdog) after
+            # shutdown
+            # 0x08 - Controlled GNSS stop
+            # 0x09 - Controlled GNSS start
 
             reserved1 = U1(3)  # Reserved
 
         class Set(UBXMessage):
             def __init__(self, navBbrMask=0, resetMode=0):
                 payload = struct.pack(
-                        '<HBB', navBbrMask, resetMode,0
-                    )
+                    '<HBB', navBbrMask, resetMode, 0
+                )
 
                 UBXMessage.__init__(
                     self, CFG._class, CFG.RST._id, payload
@@ -278,7 +278,6 @@ class CFG:
         class Fields:
             tpIdx = U1(1)  # Time pulse selection (0 = TIMEPULSE, 1 = TIMEPULSE2)
 
-
     @addGet
     class INF:
         """32.11.13.2 Information message configuration."""
@@ -299,3 +298,50 @@ class CFG:
                 reserved1_3 = U1(4)
                 infMsgMask = X1(5)
 
+    @addGet
+    class NAV5:
+        """32.11.17.1 Navigation Engine Settings."""
+
+        _id = 0x24
+
+        class Fields:
+            mask = X2(1)
+            dynMode1 = U1(2)
+            fixMode = U1(3)
+            fixedAlt = I4(4)
+            fixedAltVar = U4(5)
+            minElev = I1(6)
+            drLimit = U1(7)
+            pDop = U2(8)
+            tDop = U2(9)
+            pAcc = U2(10)
+            tAcc = U2(11)
+            staticHoldThr = U1(12)
+            dgnssTimeout = U1(13)
+            cnoThreshNumSvs = U1(14)
+            cnoThres = U1(15)
+            reserved1_1 = U1(16)
+            reserved1_2 = U1(17)
+            staticHoldMaxDist = U2(18)
+            utcStandard = U1(19)
+            reserved2_1 = U1(20)
+            reserved2_2 = U1(21)
+            reserved2_3 = U1(22)
+            reserved2_4 = U1(23)
+            reserved2_5 = U1(24)
+
+        class Set(UBXMessage):
+            def __init__(self, mask=0, dynMode1=0, fixMode=0, fixedAlt=0, fixedAltVar=0,
+                         minElev=0, drLimit=0, pDop=0, tDop=0, pAcc=0, tAcc=0,
+                         staticHoldThr=0, dgnssTimeout=0, cnoThreshNumSvs=0,
+                         cnoThres=0, staticHoldMaxDist=0, utcStandard=0):
+                payload = struct.pack(
+                    '<HBBlLbBHHHHBBBBBBHBBBBBB',
+                    mask, dynMode1, fixMode, fixedAlt, fixedAltVar, minElev, drLimit,
+                    pDop, tDop, pAcc, tAcc, staticHoldThr, dgnssTimeout, cnoThreshNumSvs, cnoThres,
+                    1, 2, staticHoldMaxDist, utcStandard, 1, 2, 3, 4, 5
+                )
+
+                UBXMessage.__init__(
+                    self, CFG._class, CFG.NAV5._id, payload
+                )

@@ -67,6 +67,26 @@ class TestStringMethods(unittest.TestCase):
 
         self.assertEqual(msg.serialize(), expected)
 
+    def testCFG_NAV5_SET(self):
+        msg = UBX.CFG.NAV5.Set(mask=1, dynMode1=3)
+        self.assertEqual(msg._class, 0x06)
+        self.assertEqual(msg._id, 0x24)
+
+        data = msg.serialize()
+        self.assertEqual(36, len(data)-8)  # Length of payload
+        self.assertEqual(data[6+0], 1)  # Check if dyn mode mask is set
+        self.assertEqual(data[6+1], 0)  # Check if dyn mode mask is set
+        self.assertEqual(data[6+2], 3)  # Check if dyn mode value is set
+
+    def testCFG_NAV5_GET(self):
+        msg = UBX.CFG.NAV5.Get()
+        self.assertEqual(msg._class, 0x06)
+        self.assertEqual(msg._id, 0x24)
+
+        data = msg.serialize()
+        self.assertEqual(0, len(data)-8)  # Length of payload
+
+
     def testCFG_MSG_SET(self):
         msg = UBX.CFG.MSG.Set(msgClass=6, msgId=7, rate=8)
         self.assertEqual(msg._class, 0x06)
@@ -94,6 +114,7 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(msg._class, 0x06)
         self.assertEqual(msg._id, 0x04)
         self.assertEqual(msg.serialize(), b'\xb5\x62\x06\x04\x04\x00\xff\xff\x01\x00\r_')
+
 
 if __name__ == '__main__':
     unittest.main()
