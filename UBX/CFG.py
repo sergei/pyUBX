@@ -2,7 +2,7 @@
 
 from UBXMessage import UBXMessage, initMessageClass, addGet
 import struct
-from Types import U1, U2, U4, X2, X4, U, I2, I4
+from Types import U1, U2, U4, X2, X4, U, I2, I4, X1
 
 
 @initMessageClass
@@ -277,3 +277,25 @@ class CFG:
 
         class Fields:
             tpIdx = U1(1)  # Time pulse selection (0 = TIMEPULSE, 1 = TIMEPULSE2)
+
+
+    @addGet
+    class INF:
+        """32.11.13.2 Information message configuration."""
+
+        _id = 0x02
+
+        class Fields:
+            class Repeated:
+                protocolID = U1(
+                    1,
+                    allowed={
+                        0: 'UBX',
+                        1: 'NMEA',
+                        255: 'Reserved',
+                    })
+                reserved1_1 = U1(2)
+                reserved1_2 = U1(3)
+                reserved1_3 = U1(4)
+                infMsgMask = X1(5)
+
