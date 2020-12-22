@@ -345,3 +345,41 @@ class CFG:
                 UBXMessage.__init__(
                     self, CFG._class, CFG.NAV5._id, payload
                 )
+
+    @addGet
+    class NMEA:
+        """32.10.21.3 Extended NMEA protocol configuration V1."""
+
+        _id = 0x17
+
+        class Fields:
+            filterFlags = X1(1)
+            nmeaVersion = U1(2)
+            numSV = U1(3)
+            flags = X1(4)
+            gnssToFilter = X4(5)
+            svNumbering = U1(6)
+            mainTalkerId = U1(7)
+            gsvTalkerId = U1(8)
+            version = U1(9)
+            bdsTalkerId_1 = U1(10)
+            bdsTalkerId_2 = U1(11)
+            reserved1_1 = U1(12)
+            reserved1_2 = U1(13)
+            reserved1_3 = U1(14)
+            reserved1_4 = U1(15)
+            reserved1_5 = U1(16)
+            reserved1_6 = U1(17)
+
+        class Set(UBXMessage):
+            def __init__(self, filterFlags=0, nmeaVersion=0, numSV=0, flags=0, gnssToFilter=0, svNumbering=0,
+                         mainTalkerId=0, gsvTalkerId=0, version=0, bdsTalkerId_1=0, bdsTalkerId_2=0):
+                payload = struct.pack(
+                    '<BBBBLBBBBBBBBBBBB',
+                    filterFlags, nmeaVersion, numSV, flags, gnssToFilter, svNumbering, mainTalkerId,
+                    gsvTalkerId, version, bdsTalkerId_1, bdsTalkerId_2, 1, 2, 3, 4, 5, 6
+                )
+
+                UBXMessage.__init__(
+                    self, CFG._class, CFG.NMEA._id, payload
+                )
